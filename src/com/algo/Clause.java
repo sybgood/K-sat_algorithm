@@ -8,6 +8,7 @@ public class Clause {
     private property value = property.FALSE;
     private ArrayList<Variable> notList = new ArrayList<>();
     private int limit;
+    protected int NumberOfMarkedVariable = 0;
 
     public Clause(int k) {
         limit =  k;

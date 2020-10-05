@@ -15,10 +15,10 @@ public class Sentence_generator {
     private ArrayList<Clause> ClauseList = new ArrayList<>();
 
 
-    public Sentence_generator(int k, int d, int seed, int number_of_clauses){
+    public Sentence_generator(int k, int d, Random RNG, int number_of_clauses){
         this.k = k;
         this.d = d;
-        RNG = new Random(seed);
+        this.RNG = RNG;
         this.number_of_clauses = number_of_clauses;
         this.calculateNumberOfVariable();
     }

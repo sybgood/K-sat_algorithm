@@ -9,7 +9,7 @@ public class CNF_sentence {
     private int k; //k-uniform CNF formula
     private int d; // each variable can appera at most d times.
     private ArrayList<Variable> VariableList;
-
+    private Random RNG;
     /**
      * Build function
      * @param k each clause can contains at most k variable
@@ -18,14 +18,17 @@ public class CNF_sentence {
     public CNF_sentence(int k ,int d, int seed){
         this.k = k;
         this.d = d;
-        Sentence_generator a = new Sentence_generator(k,d,seed,20);
+        RNG = new Random(seed);
+        Sentence_generator a = new Sentence_generator(k,d,RNG,20);
         sentence = a.generate();
         VariableList = a.getVariableList();
     }
+
     public  CNF_sentence(int k ,int d, int seed, int number_of_clauses){
         this.k = k;
         this.d = d;
-        Sentence_generator a = new Sentence_generator(k,d,seed,number_of_clauses);
+        RNG = new Random(seed);
+        Sentence_generator a = new Sentence_generator(k,d,RNG,number_of_clauses);
         sentence = a.generate();
         VariableList = a.getVariableList();
     }
@@ -54,6 +57,10 @@ public class CNF_sentence {
         return k;
     }
 
+
+    public Random getRNG() {
+        return RNG;
+    }
 
     public int getD() {
         return d;
