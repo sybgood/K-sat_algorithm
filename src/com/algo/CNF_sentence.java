@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class CNF_sentence {
-    private ArrayList<Clause> sentence = new ArrayList<Clause>();
-    private int value = 0;
-    private int k = 0; //k-uniform CNF formula
-    private int d = 0; // each variable can appera at most d times.
-    private ArrayList<Variable> VariableList = new ArrayList<Variable>();
+    private ArrayList<Clause> sentence;
+    private property value = property.TRUE;
+    private int k; //k-uniform CNF formula
+    private int d; // each variable can appera at most d times.
+    private ArrayList<Variable> VariableList;
 
     /**
      * Build function
@@ -34,13 +34,39 @@ public class CNF_sentence {
         return VariableList;
     }
 
-    public int getValue() {
+    public property getValue() {
+        this.calculateValue();
         return value;
+    }
+
+    /**
+     * function that calculate the total T/F value of the sentence.
+     * @return  sentence property t/f/notassign.
+     */
+    public property calculateValue(){
+        for (Clause c : this.sentence){
+            value = value.and(c.calculateValue());
+        }
+        return  value;
+    }
+
+    public int getK() {
+        return k;
+    }
+
+
+    public int getD() {
+        return d;
+    }
+
+
+    public ArrayList<Clause> getSentence() {
+        return sentence;
     }
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("");
+        StringBuilder s = new StringBuilder();
         for (Clause c : this.sentence){
             s.append(c.toString());
             s.append("\n");

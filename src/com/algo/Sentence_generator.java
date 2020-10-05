@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Sentence_generator {
-    private int number_of_clauses = 20;
+    private int number_of_clauses;
     private int number_of_variable = 0;
     private Random RNG;
-    private HashMap<Variable,Integer> appeartimes = new HashMap<Variable,Integer>();
-    private int k = 0; //k-uniform CNF formula
-    private int d = 0; // each variable can appera at most d times.
-    private ArrayList<Variable> VariableList = new ArrayList<Variable>();
-    private ArrayList<Clause> ClauseList = new ArrayList<Clause>();
+    private HashMap<Variable,Integer> appeartimes = new HashMap<>();
+    private int k; //k-uniform CNF formula
+    private int d; // each variable can appera at most d times.
+    private ArrayList<Variable> VariableList = new ArrayList<>();
+    private ArrayList<Clause> ClauseList = new ArrayList<>();
 
 
     public Sentence_generator(int k, int d, int seed, int number_of_clauses){
@@ -56,7 +56,7 @@ public class Sentence_generator {
         Clause c;
 
         while(count<total_variable){
-            System.out.println(count);
+            //System.out.println(count);
             order = RNG.nextInt(number_of_variable); // random select a literal
             literal = VariableList.get(order);
             if(isVariableInLimit(literal)){ //this checks whether literal appear more than d times.

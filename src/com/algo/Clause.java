@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Clause {
-    private List<Variable> variableList = new ArrayList<Variable>();
-    private int value = 0;
-    private ArrayList<Variable> notList = new ArrayList<Variable>();
-    private int limit = 0;
+    private List<Variable> variableList = new ArrayList<>();
+    private property value = property.FALSE;
+    private ArrayList<Variable> notList = new ArrayList<>();
+    private int limit;
 
     public Clause(int k) {
         limit =  k;
@@ -17,24 +17,17 @@ public class Clause {
     /**
      *  Calculate the value of this clause.
      */
-    public void calculateValue(){
-        int k = 0;
+    public property calculateValue(){
+        value = property.FALSE;
         for (Variable v: variableList) {
             if (!notList.contains(v)) {
-                k += v.getPoperty(); // if k > 0 that means this cluase is true;
+                value = value.or(v.getPoperty()); // if k > 0 that means this cluase is true;
             }
             else{
-                if (v.getPoperty()>0){
-                    k+=0;
-                }
-                else k+=1;
+                value = value.or(v.getPoperty().not());
             }
         }
-
-        if (k>0){
-            this.value = 1;
-        }
-        else this.value = 0;
+            return value;
     }
 
     /**
@@ -56,7 +49,7 @@ public class Clause {
      * This function will calculate clause value first
      * @return the value of the clause.
      */
-    public int getValue() {
+    public property getValue() {
         this.calculateValue();
         return value;
     }

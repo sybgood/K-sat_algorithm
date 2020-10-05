@@ -1,10 +1,11 @@
 package com.algo;
 
+import javafx.beans.property.Property;
+
 public class Variable {
-    private int poperty = 0;
+    private property p = property.NOTASSIGN;
     private String name = "p";
     private int no;
-
 
     public void setName(int a) {
         this.name = name + a;
@@ -15,12 +16,12 @@ public class Variable {
         this.no = no;
     }
 
-    public void setPoperty(int a){
-        this.poperty = a;
+    public void setPoperty(property a){
+        this.p = a;
     }
 
-    public int getPoperty() {
-        return poperty;
+    public property getPoperty() {
+        return p;
     }
 
     public int getNo() {
