@@ -15,6 +15,17 @@ public class Clause {
     }
 
 
+    public void addNumber(){
+        this.NumberOfMarkedVariable++;
+    }
+
+    public void minusNumber(){
+        this.NumberOfMarkedVariable--;
+    }
+    public List<Variable> getVariableList() {
+        return variableList;
+    }
+
     /**
      *  Calculate the value of this clause.
      */

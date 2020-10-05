@@ -8,7 +8,7 @@ public class Variable {
     private property p = property.NOTASSIGN;
     private String name = "p";
     private int no;
-    protected ArrayList<Integer> clauseList;
+    protected int[] clauseList;
 
     public void setName(int a) {
         this.name = name + a;

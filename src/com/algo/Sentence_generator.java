@@ -26,6 +26,12 @@ public class Sentence_generator {
     private void generateVariable(){
         for (int i = 0; i<number_of_variable;i++){
             Variable v = new Variable(i);
+            v.clauseList = new int[k];
+
+            for (int j = 0; j<k ; j++){
+                v.clauseList[j] = -1;
+            }
+
             VariableList.add(v);
             appeartimes.put(v,0);
         }
@@ -62,7 +68,7 @@ public class Sentence_generator {
             if(isVariableInLimit(literal)){ //this checks whether literal appear more than d times.
 
                 boolean ok = false;
-                m = 0;
+                m = 0; //Dead lock preventer.
                 while (!ok){
                     m++;
                     cluseorder = RNG.nextInt(number_of_clauses); //random select a clause
@@ -77,6 +83,7 @@ public class Sentence_generator {
                         else c.addVariable(literal,true);
 
                         apperatime = appeartimes.get(literal);
+                        literal.clauseList[apperatime] = cluseorder; // record the order of the clause.
                         appeartimes.put(literal,apperatime+1);
                         count ++;
                     }

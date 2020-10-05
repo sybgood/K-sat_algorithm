@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class CNF_sentence {
-    private ArrayList<Clause> sentence;
+    protected ArrayList<Clause> sentence;
     private property value = property.TRUE;
     private int k; //k-uniform CNF formula
     private int d; // each variable can appera at most d times.
