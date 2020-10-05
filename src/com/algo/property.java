@@ -83,6 +83,7 @@ public enum property {
             return property.NOTASSIGN;
         }
     };
+
     public abstract property not();
     public abstract property or(property p);
     public abstract property and(property p);
