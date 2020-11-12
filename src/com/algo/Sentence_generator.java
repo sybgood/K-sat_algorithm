@@ -13,7 +13,7 @@ public class Sentence_generator {
     private int d; // each variable can appera at most d times.
     private ArrayList<Variable> VariableList = new ArrayList<>();
     private ArrayList<Clause> ClauseList = new ArrayList<>();
-
+    public Assignment assignment;
 
     public Sentence_generator(int k, int d, Random RNG, int number_of_clauses){
         this.k = k;
@@ -35,6 +35,7 @@ public class Sentence_generator {
             VariableList.add(v);
             appeartimes.put(v,0);
         }
+        assignment = new Assignment(VariableList);
     }
     private  void generateClause(){
         for (int i = 0; i<number_of_clauses;i++){

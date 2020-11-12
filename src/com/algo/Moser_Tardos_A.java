@@ -25,7 +25,7 @@ public class Moser_Tardos_A {
         kbeta = 2; //  should be 0.5097k with floor function
         beta = kbeta/(double)k;
         probability = (1+alpha-beta)/2;
-        System.out.println(probability);
+        //System.out.println(probability);
     }
     // We first randomly mark approximately half variables.
 
@@ -98,7 +98,7 @@ public class Moser_Tardos_A {
                 }
             }
             badE = badEvent();
-            System.out.println("finding bad event, bad event count" + badE.size());
+            //System.out.println("finding bad event, bad event count" + badE.size());
         }
         return  markedVariable;
     }

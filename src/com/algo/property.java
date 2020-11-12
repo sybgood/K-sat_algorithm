@@ -2,23 +2,32 @@ package com.algo;
 
 public enum property {
 
-    TRUE{
+    TRUE {
         @Override
         public property and(property p) {
-            switch (p){
-                case TRUE: return TRUE;
-                case FALSE: return FALSE;
-                case NOTASSIGN: return NOTASSIGN;
-                default: return TRUE;
+            switch (p) {
+                case TRUE:
+                    return TRUE;
+                case FALSE:
+                    return FALSE;
+                case NOTASSIGN:
+                    return TRUE;
+                default:
+                    return TRUE;
             }
         }
+
         @Override
-        public property or (property p){
-            switch (p){
-                case TRUE: return TRUE;
-                case FALSE: return TRUE;
-                case NOTASSIGN: return TRUE;
-                default: return TRUE;
+        public property or(property p) {
+            switch (p) {
+                case TRUE:
+                    return TRUE;
+                case FALSE:
+                    return TRUE;
+                case NOTASSIGN:
+                    return TRUE;
+                default:
+                    return TRUE;
             }
         }
 
@@ -29,14 +38,18 @@ public enum property {
     },
 
 
-    FALSE{
+    FALSE {
         @Override
         public property or(property p) {
-            switch (p){
-                case TRUE: return TRUE;
-                case FALSE: return FALSE;
-                case NOTASSIGN: return NOTASSIGN;
-                default: return FALSE;
+            switch (p) {
+                case TRUE:
+                    return TRUE;
+                case FALSE:
+                    return FALSE;
+                case NOTASSIGN:
+                    return FALSE;
+                default:
+                    return FALSE;
             }
         }
 
@@ -47,34 +60,46 @@ public enum property {
 
         @Override
         public property and(property p) {
-            switch (p){
-                case TRUE: return FALSE;
-                case FALSE: return FALSE;
-                case NOTASSIGN: return FALSE;
-                default: return FALSE;
+            switch (p) {
+                case TRUE:
+                    return FALSE;
+                case FALSE:
+                    return FALSE;
+                case NOTASSIGN:
+                    return FALSE;
+                default:
+                    return FALSE;
             }
         }
     },
 
 
-    NOTASSIGN{
+    NOTASSIGN {
         @Override
         public property or(property p) {
-            switch (p){
-                case TRUE: return TRUE;
-                case FALSE: return NOTASSIGN;
-                case NOTASSIGN: return NOTASSIGN;
-                default: return NOTASSIGN;
+            switch (p) {
+                case TRUE:
+                    return TRUE;
+                case FALSE:
+                    return FALSE;
+                case NOTASSIGN:
+                    return NOTASSIGN;
+                default:
+                    return NOTASSIGN;
             }
         }
 
         @Override
         public property and(property p) {
-            switch (p){
-                case TRUE: return NOTASSIGN;
-                case FALSE: return FALSE;
-                case NOTASSIGN: return NOTASSIGN;
-                default: return NOTASSIGN;
+            switch (p) {
+                case TRUE:
+                    return TRUE;
+                case FALSE:
+                    return FALSE;
+                case NOTASSIGN:
+                    return NOTASSIGN;
+                default:
+                    return NOTASSIGN;
             }
         }
 
@@ -85,7 +110,9 @@ public enum property {
     };
 
     public abstract property not();
+
     public abstract property or(property p);
+
     public abstract property and(property p);
 }
 
