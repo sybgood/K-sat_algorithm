@@ -1,40 +1,138 @@
 package com.algo;
 
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
-public class Sample {
-    private CNF_sentence phi;
+public final class Sample {
+    private final CNF_sentence phi;
     private float epsilon;
-    private ArrayList<Variable> markedVariableSet;
+    private final int MixingTimes;
     private Random RNG;
-    private int MixingTimes;
-    private Assignment[] assignments;
+    private final int phiLength;
+    protected ArrayList<Variable> markedVariableSet;
+    private Assignment assignments;
+    private ArrayList<ArrayList<Clause>> hyperEdge;
+    private ArrayList<ArrayList<Variable>> hyperVertex;
+    private int sb = 0;
 
+    /**
+     * Construct function, will first mark variables fist.
+     *
+     * @param phi     phi is a CNF-sentence.
+     * @param epsilon For now it is a parameter, but in fact it should be calculated by some equations in paper
+     */
     public Sample(CNF_sentence phi, float epsilon) {
         this.phi = phi;
         this.epsilon = epsilon;
         this.RNG = phi.getRNG();
-        Moser_Tardos_A m = new Moser_Tardos_A(phi);
+        Moser_Tardos_A m = new Moser_Tardos_A(phi); // First we need to mark variable.
         markedVariableSet = m.Marking();
-        MixingTimes = (int) Math.ceil(2 * phi.getVariableList().size() * Math.log(4 * phi.getVariableList().size() / epsilon));
+        phiLength = phi.getVariableList().size();
+        MixingTimes = 200;
+//        MixingTimes = (int) Math.ceil(2 * phiLength *
+//                (Math.log(4 * phiLength / epsilon)/Math.log(2)));
+        System.out.println(MixingTimes);
         //System.out.println(MixingTimes);
-        assignments = new Assignment[MixingTimes];
+        /* for space saving, we are not going to record all the assignments*/
+        //assignments = new Assignment[MixingTimes+1];
+        assignments = new Assignment();
     }
 
-    public void main_algorithm() {
-        initialassign(1);
-        for (int i = 0; i < MixingTimes; i++) {
-            Variable v = phi.getVariableList().get(RNG.nextInt(phi.getVariableList().size()));
-
+    public final void main_algorithm() {
+        initialassign(false);//initialise X_0(M)
+        System.out.println("finish initial assign");
+        Assignment a;
+        ArrayList<Variable> vset;
+        Variable v;
+        for (int i = 1; i <= MixingTimes; i++) {
+            v = this.markedVariableSet.get(RNG.nextInt(this.markedVariableSet.size()));
+            vset = new ArrayList<>(); // choose v from M uniformly at random.
+            vset.add(v);
+            a = subsample(this.epsilon / (4 * (this.MixingTimes + 1)), vset, 0);
+            for (Variable vv : assignments.getVariableList()) {
+                if (/*!a.contains(vv)*/
+                        vv != v) {
+                    a.changeValue(vv, assignments.getValue(vv));
+                }
+            }
+            assignments = a; // X_t(v)
         }
+        // the last time we sample X_v\m
+        ArrayList<Variable> unmarkedVariable = new ArrayList<>();
+        for (Variable vv : this.phi.getVariableList()) {
+            if (!markedVariableSet.contains(vv)) {
+                unmarkedVariable.add(vv);
+            }
+        }
+        // NEED FIGURE OUT
+        a = subsample(this.epsilon / 4 * (this.MixingTimes + 1),/*SPECIAL V*/unmarkedVariable, MixingTimes);
+        for (Variable vv : a.getVariableList()) {
+            assignments.changeValue(vv, a.getValue(vv));
+        }
+        System.out.println("wuhu!");
+        System.out.println(MixingTimes);
+        System.out.println(assignments.calculateSentenceValue(phi));
     }
 
+    /**
+     * Find the connected components of given CNF-sentence,
+     *
+     * @param phix CNF sentence
+     */
+    protected final void Conn(CNF_sentence phix, ArrayList<Variable> special_V) {
+        ArrayList<ArrayList<Clause>> a = new ArrayList<>(); // a is the hyper edge set
+        ArrayList<ArrayList<Variable>> b = new ArrayList<>(); // b is the vertices for each hyper graph
+        while (!phix.getSentence().isEmpty()) {
+            ArrayList<Clause> sub_c = new ArrayList<>();
+            ArrayList<Variable> sub_v = new ArrayList<>();
+            Clause c = phix.getSentence().get(0);
+            HashSet<Variable> temp_v = new HashSet(c.getVariableList());
+            sub_c.add(c);
+            phix.getSentence().remove(0);
 
-    protected void findConn(CNF_sentence phix) {
-        ArrayList<ArrayList<Clause>> a = new ArrayList<>();
+            ArrayList<Clause> remove = new ArrayList<>();
+            do {
+                for (Clause cc : remove) {
+                    phix.getSentence().remove(cc);
+                }
+                remove.clear();
+                if (phix.getSentence().isEmpty()) break;
+
+                for (Clause cc : phix.getSentence()) {
+                    for (Variable v : temp_v) {
+                        if (cc.getVariableList().contains(v)) {
+                            sub_c.add(cc);
+                            temp_v.addAll(cc.getVariableList());
+                            remove.add(cc);
+                            break;
+                        }
+                    }
+                }
+            } while (!remove.isEmpty());
+
+            for (Variable v : special_V) {
+                if (temp_v.contains(v)) {
+                    sub_v.addAll(temp_v);
+                    b.add(sub_v);
+                    a.add(sub_c);
+                    break;
+                }
+            }
+        }
+        sb++;
+        this.hyperEdge = a;
+        this.hyperVertex = b;
+        System.out.println(sb);
+
+    }
+
+    private void dfs(Clause c, ArrayList<Variable> v, CNF_sentence phix) {
+
+    }
+
+    protected void findConn_without_v(CNF_sentence phix) {
+        ArrayList<ArrayList<Clause>> a = new ArrayList<>(); // a is the hyper edge set
         ArrayList<Clause> sub_c;
-        ArrayList<ArrayList<Variable>> b = new ArrayList<>();
+        ArrayList<ArrayList<Variable>> b = new ArrayList<>(); // b is the vertices for each hyper graph
         ArrayList<Variable> sub_v;
         while (!phix.getSentence().isEmpty()) {
             sub_c = new ArrayList<>();
@@ -79,36 +177,100 @@ public class Sample {
             a.add(sub_c);
             b.add(sub_v);
         }
+        this.hyperEdge = a;
+        this.hyperVertex = b;
         System.out.println(a.size());
-        System.out.println("wuhu!");
     }
 
 
-    private Assignment subsample(double delta, Variable speical_v) {
+    /**
+     * This is the implementation of algorithm 4, the subroutine.
+     *
+     * @param delta
+     * @param speical_v selected variable
+     * @param t         the t-th iteration
+     * @return an assignment
+     */
+    private final Assignment subsample(double delta, ArrayList<Variable> speical_v, int t) {
         double eta = 0.25;
-        CNF_sentence phix = this.simplify(0);
-        this.findConn(phix);
-        return null;
+        CNF_sentence phix = this.simplify(t, speical_v);
+        this.Conn(phix, speical_v);
+        if (this.hyperEdge.size() == 0) {
+            Assignment a = new Assignment(speical_v);
+            a.randomAssignment(this.RNG);
+            return a;
+        }
+        double s = phi.getD() * phi.getK() * (Math.log(phiLength / delta) / Math.log(2));
+        for (ArrayList<Clause> c : this.hyperEdge) {
+            if (c.size() > s) {
+                Assignment a = new Assignment(speical_v);
+                a.randomAssignment(this.RNG);
+                return a;
+            }
+        }
+        Assignment Y = new Assignment();
+        for (int i = 0; i < this.hyperEdge.size(); i++) {
+            CNF_sentence newC = new CNF_sentence(this.hyperEdge.get(i), this.hyperVertex.get(i),
+                    phi.getK(), phi.getD(), phi.getRNG());
+            Assignment Y_i = rejectionSampling(newC);
+
+            Set<Map.Entry<Variable, property>> entrySet = Y_i.getH().entrySet();
+            Iterator<Map.Entry<Variable, property>> iter = entrySet.iterator();
+            while (iter.hasNext()) {
+                Map.Entry<Variable, property> entry = iter.next();
+                Y.changeValue(entry.getKey(), entry.getValue());
+            }
+//            for(Variable v :Y_i.getH().keySet()){
+//                Y.changeValue(v,Y_i.getValue(v));
+//            }
+        }
+        return Y;
+    }
+
+    private final Assignment rejectionSampling(CNF_sentence phix) {
+        property p = property.FALSE;
+        Assignment a = new Assignment(phix.getVariableList());
+        int i = 0;
+        while (p != property.TRUE) {
+            ++i;
+            a.randomAssignment(this.RNG);
+            p = a.calculateSentenceValue(phix);
+            if (i > 1000) break;
+        }
+        return a;
     }
 
     /**
-     * @param j j-th assignment we are going to use to simplify
+     * This function simplies the given CNF-sentence
+     *
+     * @param j         Simplify the sentence based on j-th X_j
+     * @param special_v this is the random selected variable set.
      * @return a simplify cnf sentence phi x
      */
-    protected CNF_sentence simplify(int j) {
+    protected final CNF_sentence simplify(int j, ArrayList<Variable> special_v) {
+        //System.out.println(j+"-th iteration");
+
         ArrayList<Variable> s_vset = new ArrayList<>();
         ArrayList<Clause> s_c = new ArrayList<>();
         for (Variable v : phi.getVariableList()) {
-            if (!markedVariableSet.contains(v)) {
+            if (!assignments.getVariableList().contains(v) || special_v.contains(v)) {
                 s_vset.add(v);
             }
-        } //After forloop, we obtain the set V^x
+        }
+        //After above code, we obtain the set V^x
 
         for (Clause c : phi.getSentence()) {
-            if (assignments[j].calculateClauseValue(c) != property.TRUE) {
+//            if(c.contains(special_v.get(0))){
+//                System.out.println("I found you~"+sb);
+//                sb++;
+//            }
+            property p = assignments.calculateClauseValueWithoutSet(c, special_v);
+            if (p != property.TRUE) {
                 Clause k = c.clone();
-                for (Variable v : markedVariableSet) {
-                    k.remove(v);
+                for (Variable v : assignments.getVariableList()) {
+                    if (!special_v.contains(v)) {
+                        k.remove(v);
+                    }
                 }
                 s_c.add(k);
             }
@@ -116,9 +278,17 @@ public class Sample {
         return new CNF_sentence(s_c, s_vset, phi.getK(), phi.getD(), phi.getRNG());
     }
 
-    protected Assignment initialassign(int k) {
+
+    /**
+     * Initialisation function, which act line 2 on Algorithm 3. The initial sample procedure.
+     *
+     * @param useMorserTardo whether use Moser-tardo to do the sample. k = 0 means we use random sample
+     * @return An assignment that assigns each literal a value.
+     */
+    protected final Assignment initialassign(boolean useMorserTardo) {
         // Uniformly assign.
-        Assignment assignment = new Assignment(phi.getVariableList());
+        //In the initial step, we only care about marked variables.
+        Assignment assignment = new Assignment(this.markedVariableSet);
         for (Variable v : markedVariableSet) {
             if (RNG.nextDouble() < 0.5) {
                 assignment.changeValue(v, property.TRUE);
@@ -127,7 +297,7 @@ public class Sample {
             }
         }
         //System.out.println(markedVariableSet.size());
-        if (k != 0) { // Assign with moser-tardo algorithm.
+        if (useMorserTardo) { // Assign with moser-tardo algorithm.
             while (assignment.calculateSentenceValue(phi) != property.TRUE) {
                 //System.out.println(assignment.calculateSentenceValue(phi).toString());
                 for (Clause c : phi.getSentence()) {
@@ -146,7 +316,7 @@ public class Sample {
                 }
             }
         }
-        this.assignments[0] = assignment;
+        this.assignments = assignment;
         return assignment;
     }
 }

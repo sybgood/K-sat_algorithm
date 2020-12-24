@@ -5,26 +5,26 @@ import java.util.List;
 import java.util.Random;
 
 // this is the first resamping algorithm
-public class Moser_Tardos_A {
+public final class Moser_Tardos_A {
     private CNF_sentence sentence;
-    private double kalpha,kbeta,alpha,beta;
+    private double kalpha, kbeta, alpha, beta;
     private ArrayList<Variable> markedVariable = new ArrayList<>();
-    private  ArrayList<Variable> unmakerdVariable = new ArrayList<>();
+    private ArrayList<Variable> unmakerdVariable = new ArrayList<>();
     private int k;
     private Random RNG;
     private double probability;
 
 
-    public Moser_Tardos_A(CNF_sentence sentence){
+    public Moser_Tardos_A(CNF_sentence sentence) {
         this.sentence = sentence;
         unmakerdVariable.addAll(sentence.getVariableList());
         RNG = sentence.getRNG();
         k = sentence.getK();
-        kalpha = 1; // should be 0.1133k with floor function
-        alpha = kalpha/(double)k;
-        kbeta = 2; //  should be 0.5097k with floor function
-        beta = kbeta/(double)k;
-        probability = (1+alpha-beta)/2;
+        kalpha = 2; // should be 0.1133k with floor function
+        alpha = kalpha / (double) k;
+        kbeta = 1; //  should be 0.5097k with floor function
+        beta = kbeta / (double) k;
+        probability = (1 + 0.1133 - 0.5097) / 2; // (1+alpha-beta)/2
         //System.out.println(probability);
     }
     // We first randomly mark approximately half variables.
@@ -43,23 +43,21 @@ public class Moser_Tardos_A {
 
 
     private void markVariableAdd(Variable v){
-        for (int i = 0 ; i < k ; i++){
+        for (int i = 0; i < v.clauseList.length; i++) {
             int clausorder = v.clauseList[i];
-            if (clausorder!=-1){
+            if (clausorder != -1) {
                 this.sentence.sentence.get(clausorder).addNumber();
             }
-            else break;
         }
     }
 
 
     private void markVariableMinus(Variable v){
-        for (int i = 0 ; i < k ; i++){
+        for (int i = 0; i < v.clauseList.length; i++) {
             int clausorder = v.clauseList[i];
-            if (clausorder!=-1){
+            if (clausorder != -1) {
                 this.sentence.sentence.get(clausorder).minusNumber();
             }
-            else break;
         }
     }
 
@@ -68,7 +66,7 @@ public class Moser_Tardos_A {
         ArrayList<Integer> n = new ArrayList<>();
         for (int i = 0; i< sentence.sentence.size(); i++){
             Clause c = sentence.sentence.get(i);
-            if (c.NumberOfMarkedVariable<kalpha||(k-c.NumberOfMarkedVariable)<kbeta) n.add(i);
+            if (c.NumberOfMarkedVariable < kalpha || k - c.NumberOfMarkedVariable < kbeta) n.add(i); // add bad event
         }
         return n;
     }
@@ -77,9 +75,9 @@ public class Moser_Tardos_A {
         initalMarking();
 
         List<Integer> badE = badEvent();
-        int m;
+        int m = 0;
         while (!badE.isEmpty()){
-            Clause c = sentence.sentence.get(badE.get(0));
+            Clause c = sentence.sentence.get(badE.get(RNG.nextInt(badE.size())));
             for(Variable v:c.getVariableList()){
 
                 if(unmakerdVariable.contains(v)){
@@ -88,17 +86,20 @@ public class Moser_Tardos_A {
                         markedVariable.add(v);
                         markVariableAdd(v);
                     }
-                }
-                else{
-                    if (RNG.nextDouble()>probability){
+                } else {
+                    if (RNG.nextDouble() > probability) {
                         markedVariable.remove(v);
                         unmakerdVariable.add(v);
                         markVariableMinus(v);
                     }
                 }
             }
+            if (m == 100000) {
+                System.out.println("danger");
+            }
+            System.out.println(m++);
             badE = badEvent();
-            //System.out.println("finding bad event, bad event count" + badE.size());
+            System.out.println("finding bad event, bad event count" + badE.size());
         }
         return  markedVariable;
     }

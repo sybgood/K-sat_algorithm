@@ -11,7 +11,7 @@ public enum property {
                 case FALSE:
                     return FALSE;
                 case NOTASSIGN:
-                    return TRUE;
+                    return NOTASSIGN;
                 default:
                     return TRUE;
             }
@@ -93,7 +93,7 @@ public enum property {
         public property and(property p) {
             switch (p) {
                 case TRUE:
-                    return TRUE;
+                    return NOTASSIGN;
                 case FALSE:
                     return FALSE;
                 case NOTASSIGN:

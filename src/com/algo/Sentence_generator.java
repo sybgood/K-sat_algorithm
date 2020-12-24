@@ -26,9 +26,9 @@ public class Sentence_generator {
     private void generateVariable(){
         for (int i = 0; i<number_of_variable;i++){
             Variable v = new Variable(i);
-            v.clauseList = new int[k];
+            v.clauseList = new int[d];
 
-            for (int j = 0; j<k ; j++){
+            for (int j = 0; j < d; j++) {
                 v.clauseList[j] = -1;
             }
 
@@ -75,13 +75,12 @@ public class Sentence_generator {
                     cluseorder = RNG.nextInt(number_of_clauses); //random select a clause
                     c = ClauseList.get(cluseorder); //random select a clause
                     //System.out.println("m："+m+c.toString());
-                    ok = c.checkInLimit() && !c.contains(literal); /* only cluase has no more than k literal, and clause
+                    ok = c.checkInLimit() && !c.contains(literal); /* only clause has no more than k literal, and clause
                                                                      doesn't contains such literal would be considered*/
                     if (ok){
-                        if(RNG.nextDouble()<0.5){  // either negation or not.
-                            c.addVariable(literal,false);
-                        }
-                        else c.addVariable(literal,true);
+                        if (RNG.nextBoolean()) {  // either negation or not.
+                            c.addVariable(literal, false);
+                        } else c.addVariable(literal, true);
 
                         apperatime = appeartimes.get(literal);
                         literal.clauseList[apperatime] = cluseorder; // record the order of the clause.
@@ -103,8 +102,8 @@ public class Sentence_generator {
 
     private void calculateNumberOfVariable(){
         int TotalVariable = number_of_clauses*k;
-        this.number_of_variable = (TotalVariable/d)+1;
-        this.number_of_variable *= (1 + RNG.nextDouble()*0.5); //make more variable
+        this.number_of_variable = (int) Math.ceil((TotalVariable / d)) + 1;
+        this.number_of_variable *= (1 + RNG.nextDouble() * 0.5); //make more variable
     }
 
     public ArrayList<Variable> getVariableList() {

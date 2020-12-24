@@ -1,7 +1,6 @@
 package com.algo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class Assignment implements Cloneable {
 
@@ -15,6 +14,9 @@ public class Assignment implements Cloneable {
         }
     }
 
+    public Assignment() {
+
+    }
 
     public Assignment(Assignment a) {
         h = (HashMap<Variable, property>) a.getH().clone();
@@ -25,7 +27,7 @@ public class Assignment implements Cloneable {
         return h;
     }
 
-
+    @Override
     public Assignment clone() {
         Assignment o = null;
         try {
@@ -37,13 +39,21 @@ public class Assignment implements Cloneable {
         return o;
     }
 
-
+    /**
+     * act same as the function put in hashmap
+     *
+     * @param v
+     * @param p
+     */
     public void changeValue(Variable v, property p) {
         h.put(v, p);
     }
 
 
     public property getValue(Variable v) {
+        if (!this.h.containsKey(v)) {
+            return property.NOTASSIGN;
+        }
         return h.get(v);
     }
 
@@ -58,9 +68,24 @@ public class Assignment implements Cloneable {
         ArrayList<Variable> notlist = c.getNotList();
         for (Variable v : c.getVariableList()) {
             if (notlist.contains(v)) {
-                value = value.or(h.get(v).not()); // if k > 0 that means this cluase is true;
+                value = value.or(getValue(v).not()); // if k > 0 that means this cluase is true;
             } else {
-                value = value.or(h.get(v));
+                value = value.or(getValue(v));
+            }
+        }
+        return value;
+    }
+
+    public property calculateClauseValueWithoutSet(Clause c, ArrayList<Variable> vset) {
+        property value = property.FALSE;
+        ArrayList<Variable> notlist = c.getNotList();
+        for (Variable v : c.getVariableList()) {
+            if (!vset.contains(v)) {
+                if (notlist.contains(v)) {
+                    value = value.or(getValue(v).not()); // if k > 0 that means this cluase is true;
+                } else {
+                    value = value.or(getValue(v));
+                }
             }
         }
         return value;
@@ -87,5 +112,28 @@ public class Assignment implements Cloneable {
             }
         }
         return value;
+    }
+
+
+    public boolean contains(Variable v) {
+        return this.h.containsKey(v);
+    }
+
+
+    public void randomAssignment(Random rng) {
+        Set<Map.Entry<Variable, property>> entrySet = h.entrySet();
+        Iterator<Map.Entry<Variable, property>> iter = entrySet.iterator();
+        while (iter.hasNext()) {
+            Map.Entry<Variable, property> entry = iter.next();
+            if (rng.nextBoolean()) {
+                this.changeValue(entry.getKey(), property.TRUE);
+            } else this.changeValue(entry.getKey(), property.FALSE);
+        }
+//        for (Variable v:this.h.keySet()){
+//            if(rng.nextBoolean()){
+//                this.changeValue(v,property.TRUE);
+//            }
+//            else this.changeValue(v,property.FALSE);
+//        }
     }
 }
