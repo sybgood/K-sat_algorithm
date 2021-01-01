@@ -3,25 +3,49 @@ package com.algo;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class CNF_sentence {
+public class CNF_sentence implements Cloneable {
     protected ArrayList<Clause> sentence;
     private int k; //k-uniform CNF formula
     private int d; // each variable can appera at most d times.
     private ArrayList<Variable> VariableList;
     private Random RNG;
+
     /**
      * Build function
+     *
      * @param k each clause can contains at most k variable
      * @param d each variable can appear at most d times
      */
-    public CNF_sentence(int k ,int d, int seed){
+    public CNF_sentence(int k, int d, int seed) {
         this.k = k;
         this.d = d;
         RNG = new Random(seed);
-        Sentence_generator a = new Sentence_generator(k,d,RNG,20);
+        Sentence_generator a = new Sentence_generator(k, d, RNG, 20);
         sentence = a.generate();
         VariableList = a.getVariableList();
     }
+
+
+    @Override
+    public CNF_sentence clone() {
+        CNF_sentence o = null;
+        try {
+            o = (CNF_sentence) super.clone();
+            o.k = this.k;
+            o.d = this.d;
+            o.sentence = new ArrayList<>();
+            for (Clause c : this.sentence) {
+                Clause cl = c.clone();
+                o.sentence.add(cl);
+            }
+            o.VariableList = new ArrayList<>(VariableList);
+            o.RNG = this.RNG;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return o;
+    }
+
 
     public CNF_sentence(int k, int d, int seed, int number_of_clauses) {
         this.k = k;
@@ -46,6 +70,10 @@ public class CNF_sentence {
         k = 0;
         d = 0;
         RNG = new Random(0);
+    }
+
+    public void setRNG(Random RNG) {
+        this.RNG = RNG;
     }
 
     public ArrayList<Variable> getVariableList() {

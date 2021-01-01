@@ -6,16 +6,17 @@ import java.util.Random;
 public class Main {
 
     public static void main(String[] args) {
-        CNF_sentence s = new CNF_sentence(5, 5, 12, 1000);
+        CNF_sentence s = new CNF_sentence(5, 5, 8888, 1000);
         //System.out.println(s.toString());
         // Moser_Tardos_A m = new Moser_Tardos_A(s);
         // ArrayList<Variable> v = m.Marking();
         System.out.println("finish create");
         long startMili1 = System.currentTimeMillis();// 当前时间对应的毫秒数
         ArrayList<property> o = new ArrayList<>();
-        for (int i = 1; i < 100; i++) {
+        for (int i = 1; i < 3; i++) {
+            CNF_sentence sss = s.clone();
             Random RNG = new Random(i);
-            Sample ss = new Sample(s, 0.25f, RNG);
+            Sample ss = new Sample(sss, 0.25f, RNG);
             ss.main_algorithm();
             o.add(ss.getAssignments().calculateSentenceValue(s));
         }

@@ -9,15 +9,15 @@ public final class Moser_Tardos_A {
     private CNF_sentence sentence;
     private double kalpha, kbeta, alpha, beta;
     private ArrayList<Variable> markedVariable = new ArrayList<>();
-    private ArrayList<Variable> unmakerdVariable = new ArrayList<>();
+    private final double probability;
     private int k;
     private Random RNG;
-    private double probability;
+    private ArrayList<Variable> unmakerdVariable;
 
 
     public Moser_Tardos_A(CNF_sentence sentence) {
         this.sentence = sentence;
-        unmakerdVariable.addAll(sentence.getVariableList());
+        unmakerdVariable = new ArrayList<>(sentence.getVariableList());
         RNG = sentence.getRNG();
         k = sentence.getK();
         kalpha = 2; // should be 0.1133k with floor function
@@ -44,9 +44,9 @@ public final class Moser_Tardos_A {
 
     private void markVariableAdd(Variable v){
         for (int i = 0; i < v.clauseList.length; i++) {
-            int clausorder = v.clauseList[i];
-            if (clausorder != -1) {
-                this.sentence.sentence.get(clausorder).addNumber();
+            int clauseOrder = v.clauseList[i];
+            if (clauseOrder != -1) {
+                this.sentence.sentence.get(clauseOrder).addNumber();
             }
         }
     }

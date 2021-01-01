@@ -24,6 +24,7 @@ public final class Sample {
         this.phi = phi;
         this.epsilon = epsilon;
         this.RNG = RNG;
+        phi.setRNG(RNG);
         Moser_Tardos_A m = new Moser_Tardos_A(phi); // First we need to mark variable.
         markedVariableSet = m.Marking();
         phiLength = phi.getVariableList().size();
