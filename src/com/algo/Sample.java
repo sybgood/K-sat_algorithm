@@ -20,16 +20,15 @@ public final class Sample {
      * @param phi     phi is a CNF-sentence.
      * @param epsilon For now it is a parameter, but in fact it should be calculated by some equations in paper
      */
-    public Sample(CNF_sentence phi, float epsilon) {
+    public Sample(CNF_sentence phi, float epsilon, Random RNG) {
         this.phi = phi;
         this.epsilon = epsilon;
-        this.RNG = phi.getRNG();
+        this.RNG = RNG;
         Moser_Tardos_A m = new Moser_Tardos_A(phi); // First we need to mark variable.
         markedVariableSet = m.Marking();
         phiLength = phi.getVariableList().size();
-        MixingTimes = 200;
-//        MixingTimes = (int) Math.ceil(2 * phiLength *
-//                (Math.log(4 * phiLength / epsilon)/Math.log(2)));
+        //MixingTimes = 651;
+        MixingTimes = (int) Math.ceil(2 * phiLength * (Math.log(4 * phiLength / epsilon) / Math.log(2)));
         System.out.println(MixingTimes);
         //System.out.println(MixingTimes);
         /* for space saving, we are not going to record all the assignments*/
@@ -48,13 +47,9 @@ public final class Sample {
             vset = new ArrayList<>(); // choose v from M uniformly at random.
             vset.add(v);
             a = subsample(this.epsilon / (4 * (this.MixingTimes + 1)), vset, 0);
-            for (Variable vv : assignments.getVariableList()) {
-                if (/*!a.contains(vv)*/
-                        vv != v) {
-                    a.changeValue(vv, assignments.getValue(vv));
-                }
+            for (Variable vv : a.getVariableList()) {
+                assignments.changeValue(vv, a.getValue(vv));
             }
-            assignments = a; // X_t(v)
         }
         // the last time we sample X_v\m
         ArrayList<Variable> unmarkedVariable = new ArrayList<>();
@@ -64,7 +59,7 @@ public final class Sample {
             }
         }
         // NEED FIGURE OUT
-        a = subsample(this.epsilon / 4 * (this.MixingTimes + 1),/*SPECIAL V*/unmarkedVariable, MixingTimes);
+        a = subsample(this.epsilon / (4 * (this.MixingTimes + 1)),/*SPECIAL V*/unmarkedVariable, MixingTimes);
         for (Variable vv : a.getVariableList()) {
             assignments.changeValue(vv, a.getValue(vv));
         }
@@ -81,7 +76,8 @@ public final class Sample {
     protected final void Conn(CNF_sentence phix, ArrayList<Variable> special_V) {
         ArrayList<ArrayList<Clause>> a = new ArrayList<>(); // a is the hyper edge set
         ArrayList<ArrayList<Variable>> b = new ArrayList<>(); // b is the vertices for each hyper graph
-        while (!phix.getSentence().isEmpty()) {
+        int i = 0;
+        while (!phix.getSentence().isEmpty()) { // Dfs approach
             ArrayList<Clause> sub_c = new ArrayList<>();
             ArrayList<Variable> sub_v = new ArrayList<>();
             Clause c = phix.getSentence().get(0);
@@ -117,17 +113,15 @@ public final class Sample {
                     break;
                 }
             }
+            i += temp_v.size();
         }
         sb++;
         this.hyperEdge = a;
         this.hyperVertex = b;
         System.out.println(sb);
-
+        // System.out.println("size "+ i);
     }
 
-    private void dfs(Clause c, ArrayList<Variable> v, CNF_sentence phix) {
-
-    }
 
     protected void findConn_without_v(CNF_sentence phix) {
         ArrayList<ArrayList<Clause>> a = new ArrayList<>(); // a is the hyper edge set
@@ -186,13 +180,14 @@ public final class Sample {
     /**
      * This is the implementation of algorithm 4, the subroutine.
      *
-     * @param delta
+     * @param delta     used for length check
      * @param speical_v selected variable
      * @param t         the t-th iteration
-     * @return an assignment
+     * @return an assignment with size |special_v|
      */
-    private final Assignment subsample(double delta, ArrayList<Variable> speical_v, int t) {
+    private Assignment subsample(double delta, ArrayList<Variable> speical_v, int t) {
         double eta = 0.25;
+        HashSet<Variable> h = new HashSet<>(speical_v);
         CNF_sentence phix = this.simplify(t, speical_v);
         this.Conn(phix, speical_v);
         if (this.hyperEdge.size() == 0) {
@@ -208,7 +203,9 @@ public final class Sample {
                 return a;
             }
         }
-        Assignment Y = new Assignment();
+        System.out.println("In");
+        Assignment a = new Assignment(speical_v);
+        a.randomAssignment(this.RNG);
         for (int i = 0; i < this.hyperEdge.size(); i++) {
             CNF_sentence newC = new CNF_sentence(this.hyperEdge.get(i), this.hyperVertex.get(i),
                     phi.getK(), phi.getD(), phi.getRNG());
@@ -218,16 +215,18 @@ public final class Sample {
             Iterator<Map.Entry<Variable, property>> iter = entrySet.iterator();
             while (iter.hasNext()) {
                 Map.Entry<Variable, property> entry = iter.next();
-                Y.changeValue(entry.getKey(), entry.getValue());
+                if (h.contains(entry.getKey())) {
+                    a.changeValue(entry.getKey(), entry.getValue());
+                }
             }
 //            for(Variable v :Y_i.getH().keySet()){
 //                Y.changeValue(v,Y_i.getValue(v));
 //            }
         }
-        return Y;
+        return a;
     }
 
-    private final Assignment rejectionSampling(CNF_sentence phix) {
+    private Assignment rejectionSampling(CNF_sentence phix) {
         property p = property.FALSE;
         Assignment a = new Assignment(phix.getVariableList());
         int i = 0;
@@ -235,13 +234,17 @@ public final class Sample {
             ++i;
             a.randomAssignment(this.RNG);
             p = a.calculateSentenceValue(phix);
-            if (i > 1000) break;
+            if (i > 100000) {
+                System.out.println("over");
+                break;
+            }
         }
         return a;
     }
 
     /**
      * This function simplies the given CNF-sentence
+     * The input assignment is X(M\{v}) Thus need to take care about special_v
      *
      * @param j         Simplify the sentence based on j-th X_j
      * @param special_v this is the random selected variable set.
@@ -249,29 +252,41 @@ public final class Sample {
      */
     protected final CNF_sentence simplify(int j, ArrayList<Variable> special_v) {
         //System.out.println(j+"-th iteration");
-
+        HashSet<Variable> h = new HashSet<>(special_v);
         ArrayList<Variable> s_vset = new ArrayList<>();
         ArrayList<Clause> s_c = new ArrayList<>();
+        HashSet<Variable> assignments_variable = new HashSet<>(assignments.getVariableList());
         for (Variable v : phi.getVariableList()) {
-            if (!assignments.getVariableList().contains(v) || special_v.contains(v)) {
+            if (!assignments_variable.contains(v) || h.contains(v)) {
                 s_vset.add(v);
             }
         }
-        //After above code, we obtain the set V^x
+        //After above code, we obtain the set V^x Now fowllowing code is going to find C^x
 
-        for (Clause c : phi.getSentence()) {
+        for (Clause c : phi.getSentence()) { // first iterating all clause within phi.
 //            if(c.contains(special_v.get(0))){
 //                System.out.println("I found you~"+sb);
 //                sb++;
 //            }
-            property p = assignments.calculateClauseValueWithoutSet(c, special_v);
-            if (p != property.TRUE) {
+            property p = assignments.calculateClauseValueWithoutSet(c, h);
+            if (p != property.TRUE) { // If given clause doesn't satisfy
                 Clause k = c.clone();
-                for (Variable v : assignments.getVariableList()) {
-                    if (!special_v.contains(v)) {
-                        k.remove(v);
-                    }
+
+                for (Variable v : c.getVariableList()) {
+                    /* Below sentence is equivalent to v in M\{v}*/
+                    if (!h.contains(v) && assignments_variable.contains(v)) k.remove(v);
                 }
+
+//                for (Variable v : h){
+//                    if (k.contains(v)) k.remove(v);
+//                }
+
+
+//                for (Variable v : c.getVariableList()) {
+//                    if (!h.contains(v)) {
+//                        k.remove(v);
+//                    }
+//                }
                 s_c.add(k);
             }
         }
@@ -318,5 +333,9 @@ public final class Sample {
         }
         this.assignments = assignment;
         return assignment;
+    }
+
+    public Assignment getAssignments() {
+        return assignments;
     }
 }

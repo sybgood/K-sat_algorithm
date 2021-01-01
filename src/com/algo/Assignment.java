@@ -42,8 +42,8 @@ public class Assignment implements Cloneable {
     /**
      * act same as the function put in hashmap
      *
-     * @param v
-     * @param p
+     * @param v variable
+     * @param p property
      */
     public void changeValue(Variable v, property p) {
         h.put(v, p);
@@ -58,8 +58,7 @@ public class Assignment implements Cloneable {
     }
 
     public ArrayList<Variable> getVariableList() {
-        ArrayList<Variable> v = new ArrayList<>();
-        v.addAll(h.keySet());
+        ArrayList<Variable> v = new ArrayList<>(h.keySet());
         return v;
     }
 
@@ -76,7 +75,7 @@ public class Assignment implements Cloneable {
         return value;
     }
 
-    public property calculateClauseValueWithoutSet(Clause c, ArrayList<Variable> vset) {
+    public property calculateClauseValueWithoutSet(Clause c, HashSet<Variable> vset) {
         property value = property.FALSE;
         ArrayList<Variable> notlist = c.getNotList();
         for (Variable v : c.getVariableList()) {
