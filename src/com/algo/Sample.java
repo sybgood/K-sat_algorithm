@@ -64,7 +64,7 @@ public final class Sample {
         for (Variable vv : a.getVariableList()) {
             assignments.changeValue(vv, a.getValue(vv));
         }
-        System.out.println("wuhu!");
+        System.out.println("woohoo!");
         System.out.println(MixingTimes);
         System.out.println(assignments.calculateSentenceValue(phi));
     }

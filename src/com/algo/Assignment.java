@@ -91,7 +91,7 @@ public class Assignment implements Cloneable {
     }
 
 
-    private void printassignment() {
+    public void printassignment() {
         for (Variable v : h.keySet()) {
             if (h.get(v) != property.NOTASSIGN) {
                 System.out.println(v.getName() + " " + h.get(v));

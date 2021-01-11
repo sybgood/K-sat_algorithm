@@ -1,28 +1,17 @@
 package com.algo;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 public class Main {
 
     public static void main(String[] args) {
-        CNF_sentence s = new CNF_sentence(5, 5, 8888, 1000);
+        CNF_sentence s = new CNF_sentence(5, 5, 8888, 100);
         //System.out.println(s.toString());
         // Moser_Tardos_A m = new Moser_Tardos_A(s);
         // ArrayList<Variable> v = m.Marking();
         System.out.println("finish create");
         long startMili1 = System.currentTimeMillis();// 当前时间对应的毫秒数
-        ArrayList<property> o = new ArrayList<>();
-        for (int i = 1; i < 3; i++) {
-            CNF_sentence sss = s.clone();
-            Random RNG = new Random(i);
-            Sample ss = new Sample(sss, 0.25f, RNG);
-            ss.main_algorithm();
-            o.add(ss.getAssignments().calculateSentenceValue(s));
-        }
-        for (property p : o) {
-            System.out.println(p);
-        }
+        Evaluator e = new Evaluator(s, 500);
+        e.evaluate();
+
 //        Sample ss = new Sample(s, 0.25f,s.getRNG());
 //        long endMili1=System.currentTimeMillis();
 //        long startMili=System.currentTimeMillis();// 当前时间对应的毫秒数
