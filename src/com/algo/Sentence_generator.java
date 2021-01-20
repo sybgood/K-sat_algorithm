@@ -103,7 +103,7 @@ public class Sentence_generator {
     private void calculateNumberOfVariable(){
         int TotalVariable = number_of_clauses*k;
         this.number_of_variable = (int) Math.ceil((TotalVariable / d)) + 1;
-        this.number_of_variable *= (1 + RNG.nextDouble() * 0.5); //make more variable
+        this.number_of_variable *= (1 + (RNG.nextDouble() * 0.5)); //make more variable
     }
 
     public ArrayList<Variable> getVariableList() {

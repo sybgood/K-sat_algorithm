@@ -40,9 +40,11 @@ public class Evaluator {
         StringBuilder s = new StringBuilder();
         Assignment a;
         HashMap<Variable, Double> h = new HashMap<Variable, Double>();
+        HashMap<Variable, Double> mse = new HashMap<Variable, Double>();
 
         for (Variable v : sentence.getVariableList()) {
             h.put(v, 0.0);
+            mse.put(v, 0.0);
             for (int i = 0; i < assignments.size(); i++) {
                 switch (assignments.get(i).getValue(v)) {
                     case TRUE:
@@ -56,8 +58,32 @@ public class Evaluator {
                     default:
                 }
             }
-            s.append(v.toString() + " True probability: " + h.get(v) / assignments.size() + "\n");
+
+            h.put(v, h.get(v) / assignments.size());
+
+            for (int i = 0; i < assignments.size(); i++) {
+                switch (assignments.get(i).getValue(v)) {
+                    case TRUE:
+                        mse.put(v, mse.get(v) + Math.pow(1 - h.get(v), 2));
+                        break;
+                    case FALSE:
+                        mse.put(v, mse.get(v) + Math.pow(0 - h.get(v), 2));
+                        break;
+                    case NOTASSIGN:
+                        break;
+                    default:
+                }
+            }
+            s.append(v.toString() + " True probability: " + h.get(v) + " Standard deviation " +
+                    +Math.sqrt(mse.get(v)) + "\n");
+
         }
+        Double l = 0.0;
+        for (Double v : h.values()) {
+            l += v;
+        }
+        l /= h.size();
+        s.append("Average probability to be assigned true is " + l);
         return s.toString();
     }
 
